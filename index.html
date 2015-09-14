@@ -5,6 +5,7 @@
  <link rel="stylesheet" href="//getbootstrap.com/dist/css/bootstrap.min.css">
         <script src="//code.jquery.com/jquery-1.11.3.min.js"></script>
         <script src="//maxcdn.bootstrapcdn.com/bootstrap/3.3.4/js/bootstrap.min.js"></script>
+    <script src="functions.js"></script>
 </head>
 <style>
 
@@ -105,6 +106,8 @@ body
 </body>
 </html>
 <script>
+
+
 $(document).ready(function(){
 	var stdin=$(".stdin");
 	var stdin_str="";
@@ -112,7 +115,7 @@ $(document).ready(function(){
 	var terminal = $(".terminal");
 	terminal.tbody=$("#tbody");
 	terminal.header=$(".terminal-header");
-	terminal.focus=false;
+	terminal.focus=true;
 	terminal.onunfocus=function(){
 			terminal.header.css("background-color","gray");
 	}
@@ -160,12 +163,27 @@ $(document).ready(function(){
 	
 	prompt.cmd=function(stdin){
 			var token = stdin.split(" ");
-			output = stdin;
-			console.log(token);
-			prompt.stdout(output);
+			var output =[stdin];
+			var cmd = token[0];
+			var args = stdin.substr(stdin.indexOf(" ")+1);
+			switch(cmd){
+				case "google":
+				case "g":
+					f.google(args,function(o){
+						output=[JSON.stringify(o)];
+				
+						prompt.stdout(output);
+					});
+					break;				
+				default:
+					console.log(token);
+					prompt.stdout(output);
+				}
 	}
 	prompt.stdout=function(output){
-		 terminal.tbody.append("<div class=tline>"+output+"</div>");
+		 $.each(output,function(i,l){
+			     terminal.tbody.append("<div class=tline>"+l+"</div>");
+		 });
 		 prompt.buffer_size=terminal.tbody.find(".tline").length;
 		 if(prompt.buffer_size>prompt.MAX_BUFF){
         var shiftup=(prompt.MAX_BUFF-prompt.buffer_size)*20;
