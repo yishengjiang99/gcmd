@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+ <link rel="stylesheet" href="//getbootstrap.com/dist/css/bootstrap.min.css">
+        <script src="//code.jquery.com/jquery-1.11.3.min.js"></script>
+        <script src="//maxcdn.bootstrapcdn.com/bootstrap/3.3.4/js/bootstrap.min.js"></script>
+</head>
+<style>
+
+body
+{
+	background-color:gray;
+	position:relative;
+}
+.prompt{
+	background-color:yellow;
+}
+.terminal{
+	background-color:black;
+	width:490px;
+	height:389px;
+	margin:50px auto;
+}
+
+.terminal-header{
+	height:22px;
+	background-color:white;
+	color:black;
+}
+.tbody-container{
+	position:relative;height:auto;
+	height:400px;
+  max-height:367px;
+	 overflow:scroll;
+}
+.terminal-body{
+	position:absolute;
+	left:0;
+	width:100%;	
+	background-color:black;
+	color:white;
+	top:0;
+}
+.tline{
+	height:20px;
+	margin:0 4px;
+}
+.prompt{
+	display:block;
+	background-color:black;
+  color:white;
+	text-align:left;
+	position:absolute;
+	bottom:0px;
+	left:0px;
+}
+.prompt span{
+	display:inline-block;
+}
+
+.cursor{
+	height:18px;
+	width:10px;
+	background-color:gray;
+}
+.carrot{
+
+}
+
+.stdin{
+	width:auto;
+}
+</style>
+<body>
+<div class=container>
+	<div class=row>
+		<div class="terminal">
+			<div class="terminal-header">GrepAwk Prompt</div>
+			<div class=tbody-container>
+			 <div class="terminal-body" id=tbody>
+        <div class='tline'></div>
+        <div class='tline'></div>
+        <div class='tline'></div>
+        <div class='tline'></div>
+				<div class='tline text-center'>Welcome</div>
+        <div class='tline text-center'>To</div>
+        <div class='tline text-center'>GrepAwk Prompt</div>
+        <div class='tline'></div>
+        <div class='tline'></div>
+        <div class='tline'></div>
+        <div class='tline'></div>
+			 </div>
+			 <div class='prompt tline'>
+				<span class='carrot'>< 60hp 100mana 100mv></span>
+				<span class=stdin></span>
+				<span class=cursor>&nbsp;</span>			
+			 </div>
+			</div> <!-- end of tbody-container -->
+		</div>
+	</div><!-- end of termianl -->
+<div class=debug style='width:100%'>
+</div>
+</div>
+</body>
+</html>
+<script>
+$(document).ready(function(){
+	var stdin=$(".stdin");
+	var stdin_str="";
+	var prompt={};
+	var terminal = $(".terminal");
+	terminal.tbody=$("#tbody");
+	terminal.header=$(".terminal-header");
+	terminal.focus=false;
+	terminal.onunfocus=function(){
+			terminal.header.css("background-color","gray");
+	}
+	terminal.onfocus=function(){
+	      terminal.header.css("background-color","white");
+	}
+	terminal.click(function(){
+			terminal.focus=true;
+			terminal.onfocus();
+	})
+	terminal.header.click(function(){
+		terminal.focus=!terminal.focus;
+		if(terminal.focus){
+				terminal.onfocus();
+		}else{
+				terminal.onunfocus();
+		}
+	});
+	var debug=$(".debug");
+	var carrot=$(".carrot");	
+	var carrot_str="< 60hp 100mana 100mv>";
+	prompt.buffer_size=terminal.tbody.find(".tline").length;
+	prompt.MAX_BUFF=15;
+ 	prompt.keypress=function(key){
+		switch(key){
+			case "Escape":
+						terminal.focus=false;
+						stdin_str="";
+						break;
+			case "enter":
+						var cmd=stdin_str;
+						terminal.tbody.append("<div class=tline >"+carrot_str+"&nbsp;"+stdin_str+"</div>");
+						stdin_str="";
+						stdin.html(stdin_str);
+						prompt.cmd(cmd);
+						break;
+			case "backspace": 
+						stdin_str=stdin_str.slice(0,-1);
+						stdin.html(stdin_str);
+						break;
+			default: stdin_str+=key;stdin.append(key);
+		}
+		//debug.append(key);
+	}
+	
+	prompt.cmd=function(stdin){
+			var token = stdin.split(" ");
+			output = stdin;
+			console.log(token);
+			prompt.stdout(output);
+	}
+	prompt.stdout=function(output){
+		 terminal.tbody.append("<div class=tline>"+output+"</div>");
+		 prompt.buffer_size=terminal.tbody.find(".tline").length;
+		 if(prompt.buffer_size>prompt.MAX_BUFF){
+        var shiftup=(prompt.MAX_BUFF-prompt.buffer_size)*20;
+        terminal.tbody.css("top",shiftup+"px");
+      }
+	}
+	$(document).keypress(function(e){
+			if(terminal.focus==false) return;
+			switch(e.keyCode){
+				case 27: terminal.focus=false;terminal.onunfocus();break;				
+				case 13: prompt.keypress("enter"); e.preventDefault(); break;
+				case 8:  prompt.keypress("backspace"); e.preventDefault(); break;
+        case 32: prompt.keypress("space"); e.preventDefault(); break;
+				case 9:  prompt.keypress("Tab"); e.preventDefault(); break;
+				default:prompt.keypress(e.key); e.preventDefault();break;
+			}
+	});
+});
+</script>
