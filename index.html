@@ -170,9 +170,7 @@ $(document).ready(function(){
 				case "google":
 				case "g":
 					f.google(args,function(o){
-						output=[JSON.stringify(o)];
-				
-						prompt.stdout(output);
+						prompt.stdout(o);
 					});
 					break;				
 				default:
